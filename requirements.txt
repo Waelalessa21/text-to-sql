@@ -1,0 +1,3 @@
+# requirements for the project
+
+# we will add one by one as we go along the project

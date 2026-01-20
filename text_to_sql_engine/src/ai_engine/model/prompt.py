@@ -1,0 +1,1 @@
+# defines the prompt that will be used to generate the SQL query.
