@@ -1,0 +1,1 @@
+# The process of converting a natural language question into a valid SQL query that can be executed on a database.
