@@ -1,3 +1,15 @@
+import sys
+from pathlib import Path
+
+# BASE_DIR = Path(__file__).resolve().parent
+
+# SRC_PATH = BASE_DIR / "text_to_sql_engine" / "src"
+
+# if str(SRC_PATH) not in sys.path:
+#     sys.path.insert(0, str(SRC_PATH))
+
+
+
 from text_to_sql_engine.src.ai_engine.core.text_to_sql import TextToSQLEngine
 from tabulate import tabulate
 

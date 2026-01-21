@@ -2,8 +2,9 @@
 
 from ..model.loader import load_ai_model
 from ..model.prompt import SQL_PROMPT_TEMPLATE
-from .database_manager import DatabaseManager
+from ..core.DB_manager import DatabaseManager
 import re
+
 
 class TextToSQLEngine:
     def __init__(self):
