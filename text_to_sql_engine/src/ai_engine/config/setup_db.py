@@ -99,6 +99,43 @@ def init_large_db():
 
     cursor.executemany("INSERT OR IGNORE INTO projects VALUES (?,?,?,?,?,?)", projects)
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS sales (
+            sale_id INTEGER PRIMARY KEY,
+            emp_id INTEGER,
+            amount REAL,
+            sale_date DATE,
+            FOREIGN KEY (emp_id) REFERENCES employees(emp_id)
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS tasks (
+            task_id INTEGER PRIMARY KEY,
+            project_id INTEGER,
+            emp_id INTEGER,
+            task_name TEXT,
+            status TEXT,
+            deadline DATE,
+            FOREIGN KEY (project_id) REFERENCES projects(project_id),
+            FOREIGN KEY (emp_id) REFERENCES employees(emp_id)
+        )
+    """)
+
+    sales_data = [
+        (1, 103, 5000, "2023-10-01"),
+        (2, 103, 7000, "2023-11-15"),
+        (3, 101, 2000, "2023-12-01"),
+    ]
+    tasks_data = [
+        (1, 501, 102, "Design Model", "Completed", "2023-12-01"),
+        (2, 501, 105, "Train Model", "Pending", "2024-01-20"),
+        (3, 502, 101, "API Development", "Completed", "2023-11-10"),
+    ]
+
+    cursor.executemany("INSERT OR IGNORE INTO sales VALUES (?,?,?,?)", sales_data)
+    cursor.executemany("INSERT OR IGNORE INTO tasks VALUES (?,?,?,?,?,?)", tasks_data)
+
     conn.commit()
     conn.close()
     print(f"Database '{DB_FILE}' created successfully with large data!")
