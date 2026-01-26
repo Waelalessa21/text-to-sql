@@ -1,0 +1,24 @@
+{
+  "user_info": {
+    "name": "user",
+    "preferences": {
+      "language": "ar",
+      "theme": "dark"
+    }
+  },
+  "active_db_key": "local_sqlite",
+  "databases": [
+    {
+      "id": "local_sqlite",
+      "name": "Local Testing DB",
+      "type": "sqlite",
+      "url": "sqlite:///./company_data.db"
+    },
+    {
+      "id": "supabase_cloud",
+      "name": "Supabase Production",
+      "type": "postgres",
+      "url": "postgresql://postgres:PASS@db.zgxvqzmenptjfrqulewv.supabase.co:5432/postgres"
+    }
+  ]
+}
