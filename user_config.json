@@ -1,0 +1,31 @@
+{
+    "user_info": {
+        "name": "kahlid",
+        "preferences": {
+            "language": "ar",
+            "theme": "dark"
+        }
+    },
+    "active_db_key": "supabase_cloud",
+    "databases": [
+        {
+            "id": "local_sqlite",
+            "name": "Local Testing DB",
+            "type": "sqlite",
+            "url": "sqlite:///./company_data.db"
+        },
+        {
+            "id": "supabase_cloud",
+            "name": "Supabase Production",
+            "type": "postgres",
+            "url": "postgresql://postgres:STF7AfijAdvZeTOR@db.zgxvqzmenptjfrqulewv.supabase.co:5432/postgres"
+        }
+    ],
+    "custom_schemas": [
+        {
+            "id": "hr_mock_design",
+            "name": "HR System Mockup",
+            "schema_text": "Table: employees (id, name, salary, dept_id), Table: departments (dept_id, name)"
+        }
+    ]
+}
