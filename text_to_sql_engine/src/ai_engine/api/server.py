@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException, middleware
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 import os
@@ -27,7 +28,7 @@ async def health():
 
 
 app.add_middleware(
-    middleware.cors.CORSMiddleware,
+    CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
