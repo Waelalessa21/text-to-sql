@@ -1,0 +1,5 @@
+#!/bin/bash
+ollama serve &
+sleep 10
+ollama pull qwen2.5-coder:7b
+python -m uvicorn ai_engine.api.server:app --host 0.0.0.0 --port 8000
