@@ -1,9 +1,7 @@
 [project]
 name = "text-to-sql"
 version = "0.1.0"
-description = "Add your description here"
+description = "Natural language to SQL query engine using local LLM"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = [
-    "firebase-admin>=6.0.0",
-]
+dependencies = []

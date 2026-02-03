@@ -13,16 +13,15 @@ class ConfigManager:
             raise FileNotFoundError(f"Config file {self.config_path} not found.")
 
         with open(self.config_path, "r", encoding="utf-8") as f:
-            return json.load(f)
+            data: Dict[str, Any] = json.load(f)
+            return data
 
     def get_active_db_info(self) -> Dict[str, Any]:
         active_key = self.config_data.get("active_db_key")
         for db in self.config_data.get("databases", []):
             if db["id"] == active_key:
-                return db
-        for fp in self.config_data.get("firebase_projects", []):
-            if fp["id"] == active_key:
-                return fp
+                result: Dict[str, Any] = db
+                return result
         dbs = self.config_data.get("databases", [])
         return dbs[0] if dbs else {}
 
@@ -31,7 +30,8 @@ class ConfigManager:
             json.dump(self.config_data, f, indent=4, ensure_ascii=False)
 
     def get_user_name(self) -> str:
-        return self.config_data["user_info"]["name"]
+        name: str = str(self.config_data["user_info"]["name"])
+        return name
 
     def add_database(self, db_id: str, name: str, db_type: str, url: str):
         new_db = {"id": db_id, "name": name, "type": db_type, "url": url}
@@ -69,34 +69,7 @@ class ConfigManager:
         for db in self.config_data.get("databases", []):
             if db["id"] == source_id:
                 return db, "real_db"
-        for fp in self.config_data.get("firebase_projects", []):
-            if fp["id"] == source_id:
-                return fp, "firebase"
         for schema in self.config_data.get("custom_schemas", []):
             if schema["id"] == source_id:
                 return schema, "schema_only"
         return None, None
-
-    def get_firebase_projects(self):
-        return self.config_data.get("firebase_projects", [])
-
-    def add_firebase_project(
-        self, fb_id: str, name: str, project_id: str, credentials_path: str
-    ):
-        if "firebase_projects" not in self.config_data:
-            self.config_data["firebase_projects"] = []
-        self.config_data["firebase_projects"].append(
-            {
-                "id": fb_id,
-                "name": name,
-                "project_id": project_id,
-                "credentials_path": credentials_path,
-            }
-        )
-        self._save_config()
-
-    def get_firebase_project(self, fb_id: str) -> Dict[str, Any] | None:
-        for fp in self.config_data.get("firebase_projects", []):
-            if fp["id"] == fb_id:
-                return fp
-        return None
