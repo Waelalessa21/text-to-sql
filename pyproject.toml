@@ -4,4 +4,6 @@ version = "0.1.0"
 description = "Natural language to SQL query engine using local LLM"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "sqlglot>=28.9.0",
+]

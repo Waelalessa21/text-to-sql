@@ -1,0 +1,23 @@
+version = 1
+revision = 3
+requires-python = ">=3.11"
+
+[[package]]
+name = "sqlglot"
+version = "28.9.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/36/72/cc50543a479a65f4ec24bef0e71529254686a1334c57cb1daebadfc29672/sqlglot-28.9.0.tar.gz", hash = "sha256:5648eaa2d038b5a0bc345f223f375315cfc6a27b2852d4eeaa1b8aaaabccdd2c", size = 5736988, upload-time = "2026-02-02T16:04:45.794Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f6/21/ee7d2798ff1f59cd5ca53063a728022da53552cbc0c63d05e120e9c9b794/sqlglot-28.9.0-py3-none-any.whl", hash = "sha256:044fbe85fd2dc0a9d8ea4adb2beefa7ff26fa2320849b08f5c5f3859d7973260", size = 595704, upload-time = "2026-02-02T16:04:43.531Z" },
+]
+
+[[package]]
+name = "text-to-sql"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "sqlglot" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "sqlglot", specifier = ">=28.9.0" }]
