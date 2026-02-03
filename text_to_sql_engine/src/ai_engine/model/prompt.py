@@ -23,7 +23,11 @@ Schema:
 User question:
 {user_input}
 
-Return ONLY:
-- A valid SQL query that uses ONLY the columns and tables from the schema above,
-OR
-- DECLINE_MESSAGE with a helpful explanation about what's missing."""
+Return in this exact format:
+DESCRIPTION: One short sentence (under 15 words) describing what the query does.
+SQL:
+```sql
+<your single SQL query here>
+```
+
+Or if you cannot answer: DECLINE_MESSAGE with a helpful explanation about what's missing."""

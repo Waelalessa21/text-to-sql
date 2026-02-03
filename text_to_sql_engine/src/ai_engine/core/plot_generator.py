@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 import pandas as pd
 
@@ -40,6 +40,48 @@ class PlotGenerator:
             return df, None, self.DECLINE_MESSAGE
 
         return df, plot_code, None
+
+    def get_figure(
+        self,
+        user_request: str,
+        columns: List[str],
+        rows: List[List],
+        plot_type: Optional[str] = None,
+    ) -> Tuple[Optional[Any], Optional[str]]:
+        """Build and return the plotly figure (for export to image). Returns (fig, None) or (None, error_message)."""
+        df, plot_code, plot_err = self.generate(
+            user_request, columns, rows, plot_type=plot_type
+        )
+        if plot_err or not plot_code or df is None:
+            return None, plot_err or self.DECLINE_MESSAGE
+        if not self.use_plotly:
+            return None, "Image export is only supported for Plotly charts."
+        try:
+            import plotly.express as px
+
+            exec_globals: dict = {"df": df, "px": px}
+            exec(plot_code, exec_globals)
+            fig = exec_globals.get("fig")
+            return (fig, None) if fig is not None else (None, "Figure was not created.")
+        except Exception as e:
+            return None, str(e)
+
+    def get_figure_as_png(
+        self,
+        user_request: str,
+        columns: List[str],
+        rows: List[List],
+        plot_type: Optional[str] = None,
+    ) -> Tuple[Optional[bytes], Optional[str]]:
+        """Build chart and return PNG bytes. Returns (png_bytes, None) or (None, error_message)."""
+        fig, err = self.get_figure(user_request, columns, rows, plot_type=plot_type)
+        if err or fig is None:
+            return None, err or self.DECLINE_MESSAGE
+        try:
+            png_bytes = fig.to_image(format="png")
+            return png_bytes, None
+        except Exception as e:
+            return None, str(e)
 
     def _detect_plot_type(self, user_request: str) -> Optional[str]:
         plot_keywords = {

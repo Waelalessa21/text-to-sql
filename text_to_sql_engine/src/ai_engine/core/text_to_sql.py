@@ -19,28 +19,39 @@ def _extract_sql(raw: str) -> str:
     return s
 
 
+def _extract_description(raw: str) -> str | None:
+    """Extract one-line DESCRIPTION from model response. Returns None if not found."""
+    match = re.search(r"DESCRIPTION:\s*([^\n]+)", raw, re.IGNORECASE)
+    if match:
+        return match.group(1).strip()
+    return None
+
+
 def run(
     user_input: str, db_manager: "DatabaseManager"
-) -> tuple[str, tuple[list, list] | None, str | None]:
+) -> tuple[str, tuple[list, list] | None, str | None, str | None]:
+    """Returns (sql, results, error, description). description is a one-line summary of the query."""
     schema = db_manager.get_schema_text()
     prompt = build_text_to_sql_prompt(user_input, schema)
     response = ollama_response(prompt).strip()
 
     if "DECLINE_MESSAGE" in response or DECLINE_MESSAGE in response:
-        return response, None, None
+        return response, None, None, None
 
     sql = _extract_sql(response)
     if not sql:
-        return response, None, "No SQL found in model output."
+        return response, None, "No SQL found in model output.", None
+
+    description = _extract_description(response)
 
     validator = SqlPolicyValidator()
     is_valid, validation_message = validator.validate(sql)
 
     if not is_valid:
-        return sql, None, validation_message
+        return sql, None, validation_message, description
 
     try:
         cols, rows = db_manager.execute_query(sql)
-        return sql, (cols, rows), None
+        return sql, (cols, rows), None, description
     except Exception as e:
-        return sql, None, str(e)
+        return sql, None, str(e), description
