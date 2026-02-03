@@ -16,4 +16,5 @@ ENV PYTHONPATH="/app/text_to_sql_engine/src"
 
 EXPOSE 8000
 
-CMD ["python", "-m", "uvicorn", "text_to_sql_engine.src.ai_engine.api.server:app", "--host", "0.0.0.0", "--port", "8000"]
+# CMD ["python", "-m", "uvicorn", "text_to_sql_engine.src.ai_engine.api.server:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ls -R /app && python -m uvicorn ai_engine.api.server:app --host 0.0.0.0 --port 8000 --log-level debug
