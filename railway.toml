@@ -1,0 +1,8 @@
+# Force Docker build (Ollama + start.sh). Config in code overrides dashboard.
+[build]
+builder = "DOCKERFILE"
+
+# Health check: Railway waits for GET /health → 200 before routing traffic.
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 300
