@@ -5,3 +5,9 @@ pandas>=2.0.0
 sqlglot>=24.0.0
 plotly>=5.0.0
 matplotlib>=3.7.0
+fastapi
+uvicorn
+pydantic
+sqlalchemy
+openai
+psycopg2-binary
