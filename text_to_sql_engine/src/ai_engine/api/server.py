@@ -1,9 +1,11 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, middleware
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 import os
 import sys
 from pathlib import Path
+
+
 
 current_file = Path(__file__).resolve()
 src_path = current_file.parent.parent.parent
@@ -13,6 +15,15 @@ from ai_engine.core.database_manager import DatabaseManager
 from ai_engine.core.text_to_sql import run as text_to_sql_run
 
 app = FastAPI()
+
+
+app.add_middleware(middleware.cors.CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 class QueryRequest(BaseModel):
     user_prompt: str
