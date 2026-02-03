@@ -1,3 +1,4 @@
+import io
 from typing import Any, List, Optional, Tuple
 
 import pandas as pd
@@ -73,15 +74,83 @@ class PlotGenerator:
         rows: List[List],
         plot_type: Optional[str] = None,
     ) -> Tuple[Optional[bytes], Optional[str]]:
-        """Build chart and return PNG bytes. Returns (png_bytes, None) or (None, error_message)."""
-        fig, err = self.get_figure(user_request, columns, rows, plot_type=plot_type)
-        if err or fig is None:
-            return None, err or self.DECLINE_MESSAGE
+        """Build chart and return PNG bytes. Uses matplotlib (no Chrome/Kaleido required)."""
+        if not rows or not columns:
+            return None, self.DECLINE_MESSAGE
+        df = pd.DataFrame(rows, columns=columns)
+        if df.empty:
+            return None, self.DECLINE_MESSAGE
+        if plot_type is None:
+            plot_type = self._detect_plot_type(user_request.lower())
+            if plot_type is None:
+                return None, "Could not detect plot type from request."
         try:
-            png_bytes = fig.to_image(format="png")
-            return png_bytes, None
+            return self._render_matplotlib_png(df, plot_type)
         except Exception as e:
             return None, str(e)
+
+    def _render_matplotlib_png(
+        self, df: pd.DataFrame, plot_type: str
+    ) -> Tuple[Optional[bytes], Optional[str]]:
+        """Render chart with matplotlib (Agg backend) and return PNG bytes. No Chrome needed."""
+        import matplotlib
+
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+
+        cols = df.columns.tolist()
+        if len(cols) < 2 and plot_type not in ["histogram", "pie"]:
+            return None, self.DECLINE_MESSAGE
+
+        fig, ax = plt.subplots()
+
+        if plot_type == "bar":
+            x_col = cols[0]
+            y_col = cols[1] if len(cols) > 1 else cols[0]
+            df.plot(kind="bar", x=x_col, y=y_col, legend=False, ax=ax)
+            ax.set_title("Bar Chart")
+            ax.set_xlabel(x_col)
+            ax.set_ylabel(y_col)
+        elif plot_type == "line":
+            x_col = cols[0]
+            y_col = cols[1] if len(cols) > 1 else cols[0]
+            df.plot(kind="line", x=x_col, y=y_col, marker="o", legend=False, ax=ax)
+            ax.set_title("Line Chart")
+            ax.set_xlabel(x_col)
+            ax.set_ylabel(y_col)
+        elif plot_type == "scatter":
+            if len(cols) < 2:
+                return None, self.DECLINE_MESSAGE
+            x_col, y_col = cols[0], cols[1]
+            ax.scatter(df[x_col], df[y_col])
+            ax.set_title("Scatter Plot")
+            ax.set_xlabel(x_col)
+            ax.set_ylabel(y_col)
+        elif plot_type == "pie":
+            if len(cols) < 2:
+                return None, self.DECLINE_MESSAGE
+            labels_col, values_col = cols[0], cols[1]
+            ax.pie(
+                df[values_col],
+                labels=df[labels_col],
+                autopct="%1.1f%%",
+            )
+            ax.set_title("Pie Chart")
+        elif plot_type == "histogram":
+            col = cols[0]
+            df[col].hist(bins=20, ax=ax)
+            ax.set_title("Histogram")
+            ax.set_xlabel(col)
+            ax.set_ylabel("Frequency")
+        else:
+            return None, self.DECLINE_MESSAGE
+
+        plt.tight_layout()
+        buf = io.BytesIO()
+        fig.savefig(buf, format="png", dpi=100)
+        plt.close(fig)
+        buf.seek(0)
+        return buf.read(), None
 
     def _detect_plot_type(self, user_request: str) -> Optional[str]:
         plot_keywords = {
