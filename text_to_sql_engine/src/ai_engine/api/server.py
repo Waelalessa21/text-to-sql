@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -47,6 +48,9 @@ class QueryRequest(BaseModel):
     connection_details: Optional[Dict[str, Any]] = None
     visualize: Optional[bool] = None
     plot_type: Optional[str] = None
+    generate_report: Optional[bool] = (
+        None  # when True, include report details (title, summary, executed_query, etc.)
+    )
 
 
 DEFAULT_DB_PATH = "sqlite:///./data/company_data.db"
@@ -88,6 +92,22 @@ async def ask_ai(http_request: Request, request: QueryRequest):
             "sql_description": description,
             "results": results,
         }
+
+        if request.generate_report:
+            row_count = len(results[1]) if results and len(results) == 2 else 0
+            payload["report"] = {
+                "title": (
+                    (request.user_prompt[:80] + "…")
+                    if len(request.user_prompt) > 80
+                    else request.user_prompt
+                ),
+                "summary": description or "Query executed successfully.",
+                "executed_query": sql,
+                "row_count": row_count,
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+            }
+        else:
+            payload["report"] = None
 
         if request.visualize and results is not None:
             cols, rows = results
