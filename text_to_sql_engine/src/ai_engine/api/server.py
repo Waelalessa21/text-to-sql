@@ -1,7 +1,10 @@
+import logging
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
+
+logger = logging.getLogger(__name__)
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -95,21 +98,33 @@ async def ask_ai(http_request: Request, request: QueryRequest):
         }
 
         if request.generate_report:
-            cols = results[0] if results and len(results) >= 1 else []
-            rows_list = results[1] if results and len(results) == 2 else []
-            row_count = len(rows_list)
-            insight = get_report_insight(request.user_prompt, cols, rows_list)
-            payload["report"] = {
-                "title": (
-                    (request.user_prompt[:80] + "…")
-                    if len(request.user_prompt) > 80
-                    else request.user_prompt
-                ),
-                "summary": insight or description or "Query executed successfully.",
-                "executed_query": sql,
-                "row_count": row_count,
-                "generated_at": datetime.now(timezone.utc).isoformat(),
-            }
+            try:
+                cols = results[0] if results and len(results) >= 1 else []
+                rows_list = results[1] if results and len(results) == 2 else []
+                row_count = len(rows_list)
+                insight = get_report_insight(request.user_prompt, cols, rows_list)
+                payload["report"] = {
+                    "title": (
+                        (request.user_prompt[:80] + "…")
+                        if len(request.user_prompt) > 80
+                        else request.user_prompt
+                    ),
+                    "summary": insight or description or "Query executed successfully.",
+                    "executed_query": sql,
+                    "row_count": row_count,
+                    "generated_at": datetime.now(timezone.utc).isoformat(),
+                }
+            except Exception as report_err:
+                _rows = results[1] if results and len(results) == 2 else []
+                payload["report"] = {
+                    "title": request.user_prompt[:80]
+                    + ("…" if len(request.user_prompt) > 80 else ""),
+                    "summary": description or "Query executed successfully.",
+                    "executed_query": sql,
+                    "row_count": len(_rows),
+                    "generated_at": datetime.now(timezone.utc).isoformat(),
+                    "report_error": str(report_err),
+                }
         else:
             payload["report"] = None
 
@@ -136,6 +151,5 @@ async def ask_ai(http_request: Request, request: QueryRequest):
         return payload
 
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Database connection error: {str(e)}"
-        )
+        logger.exception("POST /ask failed")
+        raise HTTPException(status_code=500, detail=str(e))
