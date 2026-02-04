@@ -83,11 +83,24 @@ async def ask_ai(http_request: Request, request: QueryRequest):
 
         try:
             sql, results, err, description = text_to_sql_run(full_prompt, db_manager)
-        except (requests.HTTPError, requests.ConnectionError, requests.Timeout) as e:
+        except requests.HTTPError as e:
+            logger.warning("LLM (Ollama) request failed: %s", e)
+            if e.response is not None and e.response.status_code == 404:
+                from ai_engine.config.settings import ollama_model
+
+                raise HTTPException(
+                    status_code=503,
+                    detail=f"Ollama model not found (404). Pull the model with: ollama pull {ollama_model}",
+                )
+            raise HTTPException(
+                status_code=503,
+                detail=f"LLM unavailable: {e!s}",
+            )
+        except (requests.ConnectionError, requests.Timeout) as e:
             logger.warning("LLM (Ollama) request failed: %s", e)
             raise HTTPException(
                 status_code=503,
-                detail=f"LLM unavailable. Ensure Ollama is running and the model is loaded. ({e!s})",
+                detail=f"LLM unavailable. Ensure Ollama is running at OLLAMA_BASE_URL. ({e!s})",
             )
 
         if err:
