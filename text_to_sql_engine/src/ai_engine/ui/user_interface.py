@@ -162,9 +162,7 @@ def run_ui():
 
     if send and user_input.strip():
         with st.spinner("Generating SQL query..."):
-            sql_or_decline, results, err, description = text_to_sql_run(
-                user_input.strip(), db
-            )
+            sql_or_decline, results, err = text_to_sql_run(user_input.strip(), db)
 
         # Check if declined
         if (
@@ -175,8 +173,6 @@ def run_ui():
         else:
             # Show generated SQL
             st.subheader("Generated SQL")
-            if description:
-                st.caption(description)
             st.code(sql_or_decline, language="sql")
 
             if err:
