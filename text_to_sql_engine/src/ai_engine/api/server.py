@@ -16,6 +16,7 @@ sys.path.insert(0, str(src_path))
 
 from ai_engine.core.database_manager import DatabaseManager
 from ai_engine.core.plot_generator import PlotGenerator
+from ai_engine.core.report_insight import get_report_insight
 from ai_engine.core.text_to_sql import run as text_to_sql_run
 
 app = FastAPI()
@@ -94,14 +95,17 @@ async def ask_ai(http_request: Request, request: QueryRequest):
         }
 
         if request.generate_report:
-            row_count = len(results[1]) if results and len(results) == 2 else 0
+            cols = results[0] if results and len(results) >= 1 else []
+            rows_list = results[1] if results and len(results) == 2 else []
+            row_count = len(rows_list)
+            insight = get_report_insight(request.user_prompt, cols, rows_list)
             payload["report"] = {
                 "title": (
                     (request.user_prompt[:80] + "…")
                     if len(request.user_prompt) > 80
                     else request.user_prompt
                 ),
-                "summary": description or "Query executed successfully.",
+                "summary": insight or description or "Query executed successfully.",
                 "executed_query": sql,
                 "row_count": row_count,
                 "generated_at": datetime.now(timezone.utc).isoformat(),

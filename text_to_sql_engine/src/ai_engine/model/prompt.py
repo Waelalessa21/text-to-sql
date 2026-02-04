@@ -31,3 +31,26 @@ SQL:
 ```
 
 Or if you cannot answer: DECLINE_MESSAGE with a helpful explanation about what's missing."""
+
+
+def build_report_insight_prompt(
+    user_question: str, columns: list, rows: list, max_rows: int = 15
+) -> str:
+    """Build prompt for LLM to write 1-2 sentences of user-facing insight (not query explanation)."""
+    rows_sample = rows[:max_rows] if len(rows) > max_rows else rows
+    cols_str = ", ".join(str(c) for c in columns)
+    rows_str = "\n".join(str(row) for row in rows_sample)
+    if len(rows) > max_rows:
+        rows_str += f"\n... and {len(rows) - max_rows} more row(s)"
+    return f"""You are a report writer. The user asked a question and the database returned results.
+
+User question: {user_question}
+
+Result columns: {cols_str}
+
+Result rows (sample):
+{rows_str}
+
+Write 1-2 short sentences that give the user clear insight: answer their question or summarize what the data shows. Use plain language. Do NOT describe the query, table names, or SQL. Focus on the meaning of the data (e.g. "The first employee was hired on March 15, 2019" or "Revenue is highest in Sales and Engineering.").
+
+Reply with only the insight text, nothing else."""
