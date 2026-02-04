@@ -63,8 +63,8 @@ pip install -r requirements.txt
 streamlit run src/ai_engine/ui/user_interface.py
 ```
 
-### 7. Access the UI in your browser at:"
+### 7. our siiiiite is livw:"
 
 ```bash
-text-to-sql-production-10ed.up.railway.app
+https://dataapp-production-ed32.up.railway.app/
 ```
