@@ -1,8 +1,11 @@
 import logging
+import sys
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
+
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -13,8 +16,6 @@ from pydantic import BaseModel
 
 current_file = Path(__file__).resolve()
 src_path = current_file.parent.parent.parent
-import sys
-
 sys.path.insert(0, str(src_path))
 
 from ai_engine.core.database_manager import DatabaseManager
@@ -80,7 +81,14 @@ async def ask_ai(http_request: Request, request: QueryRequest):
 
         full_prompt = f"Context: {request.context}\n\nQuestion: {request.user_prompt}"
 
-        sql, results, err, description = text_to_sql_run(full_prompt, db_manager)
+        try:
+            sql, results, err, description = text_to_sql_run(full_prompt, db_manager)
+        except (requests.HTTPError, requests.ConnectionError, requests.Timeout) as e:
+            logger.warning("LLM (Ollama) request failed: %s", e)
+            raise HTTPException(
+                status_code=503,
+                detail=f"LLM unavailable. Ensure Ollama is running and the model is loaded. ({e!s})",
+            )
 
         if err:
             return {
@@ -150,6 +158,8 @@ async def ask_ai(http_request: Request, request: QueryRequest):
 
         return payload
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.exception("POST /ask failed")
         raise HTTPException(status_code=500, detail=str(e))
