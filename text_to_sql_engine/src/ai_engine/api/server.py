@@ -96,7 +96,17 @@ async def ask_ai(http_request: Request, request: QueryRequest):
                 status_code=503,
                 detail=f"LLM unavailable: {e!s}",
             )
-        except (requests.ConnectionError, requests.Timeout) as e:
+        except requests.Timeout as e:
+            logger.warning("LLM (Ollama) request failed: %s", e)
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    "Ollama did not respond in time (read timeout). "
+                    "Set OLLAMA_TIMEOUT to a higher value (seconds), use a smaller model (OLLAMA_MODEL), "
+                    "or ensure the model is loaded before sending requests."
+                ),
+            )
+        except requests.ConnectionError as e:
             logger.warning("LLM (Ollama) request failed: %s", e)
             raise HTTPException(
                 status_code=503,
